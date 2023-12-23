@@ -61,8 +61,13 @@ public class SkymusServiceImplements implements SkymusService {
                 .onErrorContinue((throwable, o) -> logger.log(Level.SEVERE, throwable.getMessage()))
                 .flatMapMany(document -> {
                     Element sitePaginator = document.getElementById("site-paginator");
+
                     if (Objects.isNull(sitePaginator)) {
-                        return Flux.fromIterable(document.getElementsByClass("f-table"))
+                        Elements elements = document.getElementsByClass("f-table");
+                        if (elements.isEmpty()) {
+                            return Flux.empty();
+                        }
+                        return Flux.fromIterable(elements)
                                 .concatMap(element -> Flux.just(mapper.mapTo(element)));
                     }
                     Elements links = sitePaginator.select("a[href]");
